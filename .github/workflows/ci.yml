@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose
+        run: docker compose -f docker-compose.yml config -q
+
+      - name: Lint shell scripts
+        run: |
+          for f in *.sh; do
+            bash -n "$f"
+          done
+
+      - name: Validate YAML configs
+        run: |
+          pip install pyyaml -q
+          python3 -c "import yaml, glob; [yaml.safe_load(open(f)) for f in glob.glob('**/*.y*ml', recursive=True)]; print('all YAML valid')"
